@@ -3,7 +3,7 @@ import {MDUtils} from "./MDUtils";
 import {FileUtils} from "./FileUtils";
 import {IFileContent} from "./interfaces/interfaces";
 import {$log} from "ts-log-debug";
-
+import * as Path from "path";
 
 export class GeneratorEbook extends GeneratorBase {
 
@@ -49,7 +49,7 @@ export class GeneratorEbook extends GeneratorBase {
                 ),
                 menu: menu
             })
-            .then(content => FileUtils.write(`${this.dir}/index.html`, content));
+            .then(content => FileUtils.write(Path.join(this.dir, `index.html`), content));
 
 
         promises.push(promise);
@@ -79,8 +79,8 @@ export class GeneratorEbook extends GeneratorBase {
 
         const rulesResources = this.settings.checkout.branchs
             .map(branch => ({
-                from: repository + "tree/" + branch,
-                to: this.settings.checkout.cwd +"/"+ branch + ".zip"
+                from: Path.join(repository, "tree", branch),
+                to: Path.join(this.settings.checkout.cwd, `${branch}.zip`)
             }));
 
         rules = rules.concat(rulesResources);

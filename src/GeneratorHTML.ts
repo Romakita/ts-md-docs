@@ -3,7 +3,7 @@ import {MDUtils} from "./MDUtils";
 import {FileUtils} from "./FileUtils";
 import {IFileContent} from "./interfaces/interfaces";
 import {$log} from "ts-log-debug";
-
+import * as Path from "path";
 
 export class GeneratorHTML extends GeneratorBase {
 
@@ -61,18 +61,20 @@ export class GeneratorHTML extends GeneratorBase {
     private replaceUrl(content: string, filesContents: IFileContent[], cb: Function = c => c): string {
         const { root, repository, branch} = this.settings;
 
-        const base = repository + "blob/" + branch + "/";
+        const base = Path.join(repository, "blob", branch);
 
         let rules = filesContents
             .map(fileContent => ({
-                from: base + fileContent.path.replace(root + "/", ""),
-                to: fileContent.path.replace(".md", ".html").replace("readme", "index")
+                from: Path.join(base, fileContent.path.replace(root + "/", "")),
+                to: fileContent.path
+                    .replace(".md", ".html")
+                    .replace("readme", "index")
             }));
 
         const rulesResources = this.settings.checkout.branchs
             .map(branch => ({
-                from: repository + "tree/" + branch,
-                to: this.settings.checkout.cwd +"/"+ branch + ".zip"
+                from: Path.join(repository, "tree" , branch),
+                to: Path.join(this.settings.checkout.cwd, `${branch}.zip`)
             }));
 
         rules = rules.concat(rulesResources);

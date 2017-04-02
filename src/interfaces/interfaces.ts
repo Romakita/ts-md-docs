@@ -23,6 +23,7 @@ export interface IRule {
 export interface IGeneratorSettings {
     root: string;
     cwd: string;
+    template?: string;
     pageTitle: string;
     repository: string;
     branch: string;

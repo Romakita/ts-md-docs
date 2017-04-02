@@ -16,10 +16,7 @@
       "node",
       "chai",
       "mocha",
-      "cookie-parser",
-      "express",
-      "reflect-metadata",
-      "supertest"
+      "express"
     ]
   },
 

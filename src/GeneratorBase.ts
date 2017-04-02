@@ -1,10 +1,9 @@
 
 import {IRule, IFileContent, IGeneratorSettings} from "./interfaces/interfaces";
-const path = require("path");
-const basePath = path.resolve("./models");
-
-import FileUtils from "./FileUtils";
+import * as Path from "path";
+import {FileUtils} from "./FileUtils";
 import {$log} from "ts-log-debug";
+import {paths} from "./constants/constants";
 
 const ejs = require("ejs");
 
@@ -14,9 +13,16 @@ export abstract class GeneratorBase {
      * @type {Map<string, Promise<string>>}
      */
     private cache: Map<string, Promise<string>> = new Map<string, Promise<string>>();
+    /**
+     *
+     * @type {string}
+     */
+    private template = "valtech";
+    private templateDir = "";
 
-    constructor(protected settings: IGeneratorSettings){
-
+    constructor(protected settings: IGeneratorSettings) {
+        this.template = this.settings.template || "valtech";
+        this.templateDir = Path.join(paths.templates, this.template);
     }
 
     /**
@@ -38,7 +44,7 @@ export abstract class GeneratorBase {
         if (this.cache.has(file)) {
             promise = this.cache.get(file);
         } else {
-            promise = FileUtils.read(`${basePath}/${file}.html`);
+            promise = FileUtils.read(Path.join(this.templateDir, `${file}.html`));
             this.cache.set(file, promise);
         }
 
@@ -59,27 +65,15 @@ export abstract class GeneratorBase {
 
         promises.push(
             FileUtils.copy(
-                `${basePath}/scripts/`,
-                `${cwd}/scripts`
-            )
-        );
-
-        promises.push(
-            FileUtils.copy(
-                `${basePath}/styles/`,
-                `${cwd}/styles`
-            )
-        );
-
-        promises.push(
-            FileUtils.copy(
-                `${basePath}/fonts/`,
-                `${cwd}/fonts`
+                Path.join(this.templateDir, paths.assets),
+                Path.join(cwd, paths.assets)
             )
         );
 
         promises = promises.concat(
-            this.settings.copy.map((file: IRule) => FileUtils.copy(file.from, `${cwd}/${file.to}`))
+            this.settings.copy.map((file: IRule) =>
+                FileUtils.copy(file.from, Path.join(cwd, `${file.to}`))
+            )
         );
 
         return promises;

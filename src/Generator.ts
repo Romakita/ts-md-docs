@@ -6,6 +6,7 @@ import {GeneratorEbook} from "./GeneratorEbook";
 import {GeneratorPDF} from "./GeneratorPDF";
 import {$log} from "ts-log-debug";
 import * as Path from "path";
+import {paths} from "./constants/constants";
 
 export class Generator {
     /**
@@ -24,18 +25,20 @@ export class Generator {
      *
      */
     private htmlDir: string;
-
+    /**
+     *
+     */
     private resourcesDir: string;
     /**
      *
      * @type {Map<string, Promise<string>>}
      */
     constructor(private settings: IGeneratorSettings) {
-        this.tmpDir = `${this.settings.cwd}/.tmp`;
-        this.pdfDir = `${this.tmpDir}/pdf`;
-        this.ebookDir = `${this.tmpDir}/ebook`;
-        this.htmlDir = `${this.tmpDir}/html`;
-        this.resourcesDir = `${this.tmpDir}/resources`;
+        this.tmpDir = Path.join(this.settings.cwd, paths.tmp);
+        this.pdfDir = Path.join(this.settings.cwd, paths.pdf);
+        this.ebookDir = Path.join(this.settings.cwd, paths.ebook);
+        this.htmlDir = Path.join(this.settings.cwd, paths.html);
+        this.resourcesDir = Path.join(this.settings.cwd, paths.resources);
     }
 
     /**
@@ -119,14 +122,14 @@ export class Generator {
             return Promise.all(this.settings
                 .checkout
                 .branchs
-                .map((branch: string) => {
+                .map((branch: string) =>
 
-                    return FileUtils.downloadFile(
-                        `${this.settings.repository}archive/${branch}.zip`,
-                        `${this.resourcesDir}/${branch}.zip`
-                    );
+                    FileUtils.downloadFile(
+                        Path.join(this.settings.repository, 'archive', `${branch}.zip`),
+                        Path.join(this.resourcesDir, `${branch}.zip`)
+                    )
 
-                }));
+                ));
 
         }
 
@@ -154,7 +157,7 @@ export class Generator {
                                 .then(() =>
                                     FileUtils.copy(
                                         this.resourcesDir,
-                                        `${this.htmlDir}/${this.settings.checkout.cwd}`
+                                        Path.join(this.htmlDir, this.settings.checkout.cwd)
                                     ).catch(() => true)
                                 );
                         case "ebook":
@@ -163,19 +166,19 @@ export class Generator {
                                 .then(() =>
                                     FileUtils.copy(
                                         this.resourcesDir,
-                                        `${this.htmlDir}/${this.settings.checkout.cwd}`
+                                        Path.join(this.htmlDir, this.settings.checkout.cwd)
                                     ).catch(() => true)
                                 );
                         case "pdf":
                             return FileUtils
                                 .copy(
                                     Path.join(this.pdfDir, this.settings.pdfName),
-                                    Path.join(path + "/" + this.settings.pdfName)
+                                    Path.join(path, this.settings.pdfName)
                                 )
                                 .then(() =>
                                     FileUtils.copy(
                                         this.resourcesDir,
-                                        `${this.htmlDir}/${this.settings.checkout.cwd}`
+                                        Path.join(this.htmlDir, this.settings.checkout.cwd)
                                     ).catch(() => true)
                                 );
                     }

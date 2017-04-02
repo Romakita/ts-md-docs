@@ -5,6 +5,7 @@ import {IFileContent} from "./interfaces/interfaces";
 import * as Express from "express";
 import serveStatic = require("serve-static");
 import {$log} from "ts-log-debug";
+import * as Path from "path";
 
 const htmlPDF = require("html-pdf");
 
@@ -118,7 +119,7 @@ export class GeneratorPDF extends GeneratorBase {
                 return new Promise((resolve, reject) => {
                     htmlPDF
                         .create(contentHTML, this.pdfSettings)
-                        .toFile(this.dir + "/" + this.settings.pdfName, (err, res) => {
+                        .toFile(Path.join(this.dir, this.settings.pdfName), (err, res) => {
                             if (err) return reject(err);
                             resolve(res);
                         });
@@ -139,18 +140,18 @@ export class GeneratorPDF extends GeneratorBase {
     private replaceUrl(content: string, filesContents: IFileContent[], cb: Function = c => c): string {
         const { root, repository, branch} = this.settings;
 
-        const base = repository + "blob/" + branch + "/";
+        const base = Path.join(repository, "blob", branch);
 
         let rules = filesContents
             .map(fileContent => ({
-                from: base + fileContent.path.replace(root + "/", ""),
+                from: Path.join(base, fileContent.path.replace(root + "/", "")),
                 to: cb(fileContent)
             }));
 
-        let rulesResources = this.settings.checkout.branchs
+        const rulesResources = this.settings.checkout.branchs
             .map(branch => ({
-                from: repository + "tree/" + branch,
-                to: this.settings.checkout.cwd +"/"+ branch + ".zip"
+                from: Path.join(repository, "tree" , branch),
+                to: Path.join(this.settings.checkout.cwd, `${branch}.zip`)
             }));
 
         rules = rules.concat(rulesResources);
