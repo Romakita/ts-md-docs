@@ -1,5 +1,6 @@
 import * as request from "request";
 const walk    = require("walk");
+const _ = require("lodash");
 import * as FsExtra from "fs-extra"
 import {$log} from "ts-log-debug";
 
@@ -131,6 +132,15 @@ export class FileUtils {
                 $log.debug("checkout done", url);
             });
 
+    }
+
+    /**
+     *
+     * @param file
+     * @param scope
+     */
+    static resolve(file: string, scope: any) {
+        return file.replace(/(\${(.*)})/gi, (k, k2, key) => _.get(scope, key));
     }
 
 }

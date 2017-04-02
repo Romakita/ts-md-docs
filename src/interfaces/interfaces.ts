@@ -13,6 +13,7 @@ export interface IFile {
 export interface IFormatOutput {
     format: "html"|"pdf"|"ebook";
     path: string;
+    resources: string;
 }
 
 export interface IRule {
@@ -22,7 +23,6 @@ export interface IRule {
 
 export interface IGeneratorSettings {
     root: string;
-    cwd: string;
     template?: string;
     pageTitle: string;
     repository: string;
@@ -37,7 +37,8 @@ export interface IGeneratorSettings {
         files: IFile[];
     };
     checkout?: {
-        cwd: string;
         branchs: string[];
     };
+
+    paths?: any;
 }

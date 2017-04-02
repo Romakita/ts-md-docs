@@ -7,9 +7,6 @@ import * as Path from "path";
 
 export class GeneratorEbook extends GeneratorBase {
 
-    constructor(private dir: string, settings) {
-        super(settings);
-    }
     /**
      *
      * @param filesContents
@@ -49,12 +46,12 @@ export class GeneratorEbook extends GeneratorBase {
                 ),
                 menu: menu
             })
-            .then(content => FileUtils.write(Path.join(this.dir, `index.html`), content));
+            .then(content => FileUtils.write(Path.join(this.task.path, `index.html`), content));
 
 
         promises.push(promise);
 
-        promises = promises.concat(this.copyAssets(this.dir));
+        promises = promises.concat(this.copyAssets());
 
         return Promise.all(promises);
     }
@@ -69,21 +66,23 @@ export class GeneratorEbook extends GeneratorBase {
     private replaceUrl(content: string, filesContents: IFileContent[]): string {
         const { root, repository, branch} = this.settings;
 
-        const base = repository + "blob/" + branch + "/";
+        const base = repository +  Path.join("blob", branch);
 
         let rules = filesContents
             .map(fileContent => ({
-                from: base + fileContent.path.replace(root + "/", ""),
+                from: base + "/" + fileContent.path.replace(root + "/", ""),
                 to: "#" + MDUtils.sanitize(fileContent.title)
             }));
 
-        const rulesResources = this.settings.checkout.branchs
-            .map(branch => ({
-                from: Path.join(repository, "tree", branch),
-                to: Path.join(this.settings.checkout.cwd, `${branch}.zip`)
-            }));
+        if (this.task.resources) {
+            const rulesResources = this.settings.checkout.branchs
+                .map(branch => ({
+                    from: repository + Path.join("tree", branch),
+                    to: Path.join(this.task.resources, `${branch}.zip`)
+                }));
 
-        rules = rules.concat(rulesResources);
+            rules = rules.concat(rulesResources);
+        }
 
         rules.push({
             from: base,

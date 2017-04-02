@@ -1,11 +1,12 @@
 import {GeneratorBase} from "./GeneratorBase";
 import {MDUtils} from "./MDUtils";
-import {IFileContent} from "./interfaces/interfaces";
+import {IFileContent, IFormatOutput} from "./interfaces/interfaces";
 
 import * as Express from "express";
 import serveStatic = require("serve-static");
 import {$log} from "ts-log-debug";
 import * as Path from "path";
+import {FileUtils} from "./FileUtils";
 
 const htmlPDF = require("html-pdf");
 
@@ -14,6 +15,8 @@ export class GeneratorPDF extends GeneratorBase {
      *
      */
     private app;
+
+    static isAlreadyCreated = false;
 
     private pdfSettings = {
         format:"A4",
@@ -27,10 +30,6 @@ export class GeneratorPDF extends GeneratorBase {
         }
     };
 
-    constructor(private dir: string, settings) {
-        super(settings);
-    }
-
     /**
      *
      * @returns {Promise<T>}
@@ -39,7 +38,7 @@ export class GeneratorPDF extends GeneratorBase {
 
         return new Promise((resolve) => {
             this.app = Express()
-                .use(serveStatic(this.dir))
+                .use(serveStatic(this.settings.paths.pdf))
                 .listen(9090, resolve);
         });
     }
@@ -49,15 +48,36 @@ export class GeneratorPDF extends GeneratorBase {
      */
     generate(filesContents: IFileContent[]): Promise<any> {
 
-        $log.debug("Task generate PDF");
+        if (!GeneratorPDF.isAlreadyCreated) {
+            $log.debug("Task generate PDF");
+            return this
+                .startServer()
+                .then(() => this.copyAssets(this.settings.paths.pdf))
+                .then(() => this.generateHTML(filesContents))
+                .then((filesContents: any) => this.generatePDF(filesContents))
+                .then(() => this.app.close())
+                .then(() => GeneratorPDF.isAlreadyCreated = true)
+                .then(() => $log.debug("PDF Generated"));
 
-        return this
-            .startServer()
-            .then(() => this.copyAssets(this.dir))
-            .then(() => this.generateHTML(filesContents))
-            .then((filesContents: any) => this.generatePDF(filesContents))
-            .then(() => this.app.close())
+        }
 
+        return Promise.resolve();
+
+    }
+
+    /**
+     *
+     * @param task
+     * @returns {Promise<any>}
+     */
+    public copy(task: IFormatOutput) {
+
+        $log.debug("Copy pdf to", task.path);
+
+        return FileUtils.copy(
+            Path.join(this.settings.paths.pdf, this.settings.pdfName),
+            Path.join(task.path, this.settings.pdfName)
+        );
     }
 
     /**
@@ -94,8 +114,9 @@ export class GeneratorPDF extends GeneratorBase {
 
         return super.render("pdf", {
             pageTitle: `${this.settings.pageTitle}`,
-            body: content,
-        })
+            settings: this.settings,
+            body: content
+        });
     }
 
     /**
@@ -113,16 +134,20 @@ export class GeneratorPDF extends GeneratorBase {
      */
     private generatePDF(filesContents: IFileContent[]) {
 
-        return this.render(filesContents.map(f => f.content).join("\n"))
+        return this
+            .render(filesContents.map(f => f.content).join("\n"))
             .then(contentHTML => {
 
                 return new Promise((resolve, reject) => {
                     htmlPDF
                         .create(contentHTML, this.pdfSettings)
-                        .toFile(Path.join(this.dir, this.settings.pdfName), (err, res) => {
-                            if (err) return reject(err);
-                            resolve(res);
-                        });
+                        .toFile(
+                            Path.join(this.settings.paths.pdf, this.settings.pdfName),
+                            (err, res) => {
+                                if (err) return reject(err);
+                                resolve(res);
+                            }
+                        );
                 });
 
             });
@@ -140,24 +165,26 @@ export class GeneratorPDF extends GeneratorBase {
     private replaceUrl(content: string, filesContents: IFileContent[], cb: Function = c => c): string {
         const { root, repository, branch} = this.settings;
 
-        const base = Path.join(repository, "blob", branch);
+        const project = Path.join(repository, "blob", branch);
 
         let rules = filesContents
             .map(fileContent => ({
-                from: Path.join(base, fileContent.path.replace(root + "/", "")),
+                from: Path.join(project, fileContent.path.replace(root + "/", "")),
                 to: cb(fileContent)
             }));
 
-        const rulesResources = this.settings.checkout.branchs
-            .map(branch => ({
-                from: Path.join(repository, "tree" , branch),
-                to: Path.join(this.settings.checkout.cwd, `${branch}.zip`)
-            }));
+        /*if (this.task.resources) {
+         const rulesResources = this.settings.checkout.branchs
+         .map(branch => ({
+         from: repository + Path.join("tree" , branch),
+         to: Path.join(this.task.resources, `${branch}.zip`)
+         }));
 
-        rules = rules.concat(rulesResources);
+         rules = rules.concat(rulesResources);
+         }*/
 
         rules.push({
-            from: base,
+            from: project,
             to: ""
         });
 

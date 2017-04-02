@@ -7,10 +7,6 @@ import * as Path from "path";
 
 export class GeneratorHTML extends GeneratorBase {
 
-
-    constructor(private dir: string, settings) {
-        super(settings);
-    }
     /**
      *
      * @param filesContents
@@ -38,15 +34,16 @@ export class GeneratorHTML extends GeneratorBase {
 
                 return this
                     .render("page", {
+                        settings: this.settings,
                         pageTitle: `${this.settings.pageTitle}`,
                         body: content,
                         menu: menu
                     })
-                    .then(content => FileUtils.write(`${this.dir}/${file}`, content));
+                    .then(content => FileUtils.write(Path.join(this.task.path, file), content));
 
             });
 
-        promises = promises.concat(this.copyAssets(this.dir));
+        promises = promises.concat(this.copyAssets());
 
         return Promise.all(promises);
     }
@@ -61,26 +58,28 @@ export class GeneratorHTML extends GeneratorBase {
     private replaceUrl(content: string, filesContents: IFileContent[], cb: Function = c => c): string {
         const { root, repository, branch} = this.settings;
 
-        const base = Path.join(repository, "blob", branch);
+        const project = repository + Path.join("blob", branch);
 
         let rules = filesContents
             .map(fileContent => ({
-                from: Path.join(base, fileContent.path.replace(root + "/", "")),
+                from: Path.join(project, fileContent.path.replace(root + "/", "")),
                 to: fileContent.path
                     .replace(".md", ".html")
                     .replace("readme", "index")
             }));
 
-        const rulesResources = this.settings.checkout.branchs
-            .map(branch => ({
-                from: Path.join(repository, "tree" , branch),
-                to: Path.join(this.settings.checkout.cwd, `${branch}.zip`)
-            }));
+        if (this.task.resources) {
+            const rulesResources = this.settings.checkout.branchs
+                .map(branch => ({
+                    from: repository + Path.join("tree", branch),
+                    to: Path.join(this.task.resources, `${branch}.zip`)
+                }));
 
-        rules = rules.concat(rulesResources);
+            rules = rules.concat(rulesResources);
+        }
 
         rules.push({
-            from: base,
+            from: project,
             to: ""
         });
 

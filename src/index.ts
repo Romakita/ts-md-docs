@@ -2,6 +2,7 @@
 
 require('source-map-support').install();
 
+export * from "./interfaces/interfaces";
 export * from "./FileUtils";
 export * from "./Generator";
 export * from "./GeneratorBase";

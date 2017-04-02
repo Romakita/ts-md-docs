@@ -15,7 +15,8 @@
     "test:remap": "./node_modules/.bin/remap-istanbul -i coverage/coverage.json -o coverage/lcov-report -t html",
     "test:travis": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec --check-leaks test/",
     "tsc": "tsc",
-    "tsc:compile": "tsc --project tsconfig.compile.json"
+    "tsc:compile": "tsc --project tsconfig.compile.json",
+    "tsc:compile:w": "tsc --project tsconfig.compile.json -w"
   },
   "author": "",
   "license": "ISC",
@@ -31,6 +32,7 @@
     "github-markdown-css": "^2.4.1",
     "hast-util-to-html": "^3.0.0",
     "html-pdf": "^2.1.0",
+    "lodash": "^4.17.4",
     "remark": "^6.2.0",
     "remark-github": "^6.0.1",
     "remark-html": "^5.1.0",

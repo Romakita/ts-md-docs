@@ -6,39 +6,16 @@ import {GeneratorEbook} from "./GeneratorEbook";
 import {GeneratorPDF} from "./GeneratorPDF";
 import {$log} from "ts-log-debug";
 import * as Path from "path";
-import {paths} from "./constants/constants";
+import {paths, pathsSrc} from "./constants/constants";
 
 export class Generator {
-    /**
-     *
-     */
-    private tmpDir: string;
-    /**
-     *
-     */
-    private pdfDir: string;
-    /**
-     *
-     */
-    private ebookDir: string;
-    /**
-     *
-     */
-    private htmlDir: string;
-    /**
-     *
-     */
-    private resourcesDir: string;
     /**
      *
      * @type {Map<string, Promise<string>>}
      */
     constructor(private settings: IGeneratorSettings) {
-        this.tmpDir = Path.join(this.settings.cwd, paths.tmp);
-        this.pdfDir = Path.join(this.settings.cwd, paths.pdf);
-        this.ebookDir = Path.join(this.settings.cwd, paths.ebook);
-        this.htmlDir = Path.join(this.settings.cwd, paths.html);
-        this.resourcesDir = Path.join(this.settings.cwd, paths.resources);
+        this.settings = Object.assign(settings, {paths}, {pathsSrc});
+        this.settings.paths.tmp = FileUtils.resolve(paths.tmp, this.settings);
     }
 
     /**
@@ -46,28 +23,41 @@ export class Generator {
      * @returns {Promise<TResult|any[]>}
      */
     public build(){
-        return this.createWorkspace()
+        return this
+            .createWorkspace()
             .then(() => this.taskCheckout())
             .then(() => this.taskReadFiles())
             .then(filesContents => this.taskGenerate(filesContents))
-            .then(() => this.taskCopyToDirs())
+            //.then(() => this.taskCopyToDirs())
             .then(() => this.settings)
-            .then(() => FileUtils.remove(this.tmpDir));
+            //.then(() => FileUtils.remove(this.settings.paths.tmp));
     }
 
     /**
      *
      * @returns {Promise<void>}
      */
-    private createWorkspace(){
+    private createWorkspace() {
+
         return Promise.resolve()
-            .then(() => FileUtils.remove(this.settings.cwd))
-            .then(() => FileUtils.mkdirs(this.settings.cwd))
-            .then(() => FileUtils.mkdirs(this.tmpDir))
-            .then(() => FileUtils.mkdirs(this.pdfDir))
-            .then(() => FileUtils.mkdirs(this.htmlDir))
-            .then(() => FileUtils.mkdirs(this.ebookDir))
-            .then(() => FileUtils.mkdirs(this.resourcesDir));
+            .then(() => FileUtils.remove(this.settings.paths.tmp))
+            .then(() =>
+                FileUtils.mkdirs(
+                    Object
+                        .keys(this.settings.paths)
+                        .map((key) =>
+                            this.settings.paths[key] = FileUtils.resolve(this.settings.paths[key], this.settings)
+                        )
+
+                )
+            )
+            .then(() =>
+                FileUtils.mkdirs(
+                    this.settings.outDir.map((outdir) =>
+                        outdir.path = FileUtils.resolve(outdir.path, this.settings)
+                    )
+                )
+            );
     }
 
 
@@ -79,9 +69,9 @@ export class Generator {
 
         const mapper: any = (file: IFile) =>
             FileUtils
-                .read(Path.resolve(Path.join(
-                    ...[this.settings.root, file.cwd, file.path].filter(o => !!o)
-                )))
+                .read(
+                    Path.join(FileUtils.resolve(file.cwd, this.settings), file.path)
+                )
                 .then(content => (<IFileContent> {
                     title: file.title,
                     path: file.path,
@@ -100,14 +90,33 @@ export class Generator {
      */
     private taskGenerate(filesContents: IFileContent[]): Promise<any> {
 
-        const generatorHTML = new GeneratorHTML(this.htmlDir, this.settings);
-        const generatorEbook = new GeneratorEbook(this.ebookDir, this.settings);
-        const generatorPDF = new GeneratorPDF(this.pdfDir, this.settings);
+        const generatorPDF = new GeneratorPDF({} as any, this.settings);
 
-        return Promise.resolve()
-            .then(() => generatorHTML.generate(filesContents))
-            .then(() => generatorEbook.generate(filesContents))
-            .then(() => generatorPDF.generate(filesContents));
+        return generatorPDF
+            .generate(filesContents)
+            .then(() => $log.debug("PDF generated"))
+            .then(() =>
+                Promise.all(
+
+                    this.settings.outDir.map((task: IFormatOutput) => {
+
+                            switch(task.format) {
+                                case "html":
+                                    return new GeneratorHTML(task, this.settings).generate(filesContents)
+                                        .catch(er => console.error(task, er));
+                                case "ebook":
+                                    return new GeneratorEbook(task, this.settings).generate(filesContents)
+                                        .catch(er => console.error(task, er));
+                                case "pdf":
+                                    return generatorPDF.copy(task)
+                                        .catch(er => console.error(task, er));
+                            }
+
+                        }
+                    ))
+
+            );
+
     }
 
     /**
@@ -125,8 +134,8 @@ export class Generator {
                 .map((branch: string) =>
 
                     FileUtils.downloadFile(
-                        Path.join(this.settings.repository, 'archive', `${branch}.zip`),
-                        Path.join(this.resourcesDir, `${branch}.zip`)
+                        this.settings.repository + Path.join('archive', `${branch}.zip`),
+                        Path.join(this.settings.paths.resources, `${branch}.zip`)
                     )
 
                 ));
@@ -134,62 +143,5 @@ export class Generator {
         }
 
     }
-    /**
-     *
-     */
-    private taskCopyToDirs() {
-
-        $log.debug("Generate directories");
-
-        const promises = this.settings.outDir.map((task: IFormatOutput) => {
-            const path = Path.join(this.settings.cwd, task.path);
-
-            return FileUtils
-                .mkdirs(path)
-                .then(() => {
-
-                    $log.debug(`Export ${task.format} to directory ${path}`);
-
-                    switch(task.format) {
-                        case "html":
-                            return FileUtils
-                                .copy(this.htmlDir, path)
-                                .then(() =>
-                                    FileUtils.copy(
-                                        this.resourcesDir,
-                                        Path.join(this.htmlDir, this.settings.checkout.cwd)
-                                    ).catch(() => true)
-                                );
-                        case "ebook":
-                            return FileUtils
-                                .copy(this.ebookDir, path)
-                                .then(() =>
-                                    FileUtils.copy(
-                                        this.resourcesDir,
-                                        Path.join(this.htmlDir, this.settings.checkout.cwd)
-                                    ).catch(() => true)
-                                );
-                        case "pdf":
-                            return FileUtils
-                                .copy(
-                                    Path.join(this.pdfDir, this.settings.pdfName),
-                                    Path.join(path, this.settings.pdfName)
-                                )
-                                .then(() =>
-                                    FileUtils.copy(
-                                        this.resourcesDir,
-                                        Path.join(this.htmlDir, this.settings.checkout.cwd)
-                                    ).catch(() => true)
-                                );
-                    }
-
-                    return Promise.resolve();
-                });
-
-        });
-
-        return Promise.all(promises);
-    }
-
 
 }
