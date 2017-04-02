@@ -1,0 +1,11 @@
+test
+src/**/*.js
+src/**/*.js.map
+coverage
+tsconfig.json
+tsconfig.compile.json
+tslint.json
+.travis.yml
+.gitignore
+.idea
+dts
