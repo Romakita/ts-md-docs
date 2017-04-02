@@ -16,7 +16,9 @@
       "node",
       "chai",
       "mocha",
-      "express"
+      "express",
+      "request",
+      "fs-extra"
     ]
   },
 
