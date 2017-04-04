@@ -59,23 +59,27 @@ export class GeneratorHTML extends GeneratorBase {
         const { root, repository, branch} = this.settings;
 
         const project = repository + Path.join("blob", branch);
+        let rules = [];
 
-        let rules = filesContents
-            .map(fileContent => ({
-                from: Path.join(project, fileContent.path.replace(root + "/", "")),
-                to: fileContent.path
-                    .replace(".md", ".html")
-                    .replace("readme", "index")
-            }));
+        rules = rules.concat(
+            this.settings.concat.files.map(file => ({
+                from: file.path,
+                to: file.path.replace(".md", ".html")
+            }))
+        );
+
+        rules = rules.concat(
+            filesContents
+                .map(fileContent => ({
+                    from: Path.join(project, fileContent.path.replace(root + "/", "")),
+                    to: fileContent.path
+                        .replace(".md", ".html")
+                        .replace("readme", "index")
+                }))
+        );
 
         if (this.task.resources) {
-            const rulesResources = this.settings.checkout.branchs
-                .map(branch => ({
-                    from: repository + Path.join("tree", branch),
-                    to: Path.join(this.task.resources, `${branch}.zip`)
-                }));
-
-            rules = rules.concat(rulesResources);
+            rules = rules.concat(this.getRulesResourcesTags(this.getResourcesRelativePath()));
         }
 
         rules.push({
@@ -85,5 +89,4 @@ export class GeneratorHTML extends GeneratorBase {
 
         return this.replacer(content, rules);
     }
-
 }

@@ -28,9 +28,8 @@ export class Generator {
             .then(() => this.taskCheckout())
             .then(() => this.taskReadFiles())
             .then(filesContents => this.taskGenerate(filesContents))
-            //.then(() => this.taskCopyToDirs())
             .then(() => this.settings)
-            //.then(() => FileUtils.remove(this.settings.paths.tmp));
+            .then(() => FileUtils.remove(this.settings.paths.tmp));
     }
 
     /**
@@ -143,5 +142,6 @@ export class Generator {
         }
 
     }
+
 
 }

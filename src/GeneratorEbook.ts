@@ -75,13 +75,7 @@ export class GeneratorEbook extends GeneratorBase {
             }));
 
         if (this.task.resources) {
-            const rulesResources = this.settings.checkout.branchs
-                .map(branch => ({
-                    from: repository + Path.join("tree", branch),
-                    to: Path.join(this.task.resources, `${branch}.zip`)
-                }));
-
-            rules = rules.concat(rulesResources);
+            rules = rules.concat(this.getRulesResourcesTags(this.getResourcesRelativePath()));
         }
 
         rules.push({

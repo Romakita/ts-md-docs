@@ -87,7 +87,7 @@ export class GeneratorPDF extends GeneratorBase {
      */
     private generateHTML(filesContents: IFileContent[]): Promise<IFileContent[]> {
 
-        const promises = filesContents
+        const promises = JSON.parse(JSON.stringify(filesContents))
 
             .map((fileContent: IFileContent) => {
 
@@ -163,7 +163,7 @@ export class GeneratorPDF extends GeneratorBase {
      * @returns {string}
      */
     private replaceUrl(content: string, filesContents: IFileContent[], cb: Function = c => c): string {
-        const { root, repository, branch} = this.settings;
+        const { root, repository, branch } = this.settings;
 
         const project = Path.join(repository, "blob", branch);
 
@@ -173,15 +173,9 @@ export class GeneratorPDF extends GeneratorBase {
                 to: cb(fileContent)
             }));
 
-        /*if (this.task.resources) {
-         const rulesResources = this.settings.checkout.branchs
-         .map(branch => ({
-         from: repository + Path.join("tree" , branch),
-         to: Path.join(this.task.resources, `${branch}.zip`)
-         }));
-
-         rules = rules.concat(rulesResources);
-         }*/
+        //https://github.com/NodeAndTyped/labs-angular/archive/tp1-solution.zip
+        //https://github.com/Romakita/ts-md-docs/archive/master.zip
+        rules = rules.concat(this.getRulesResourcesTags(repository + "archive"));
 
         rules.push({
             from: project,

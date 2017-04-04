@@ -108,4 +108,38 @@ export abstract class GeneratorBase {
         rules.forEach(rule => content = content.replace(new RegExp(rule.from, "gi"), rule.to));
         return content;
     }
+
+    /**
+     *
+     * @param label
+     * @param url
+     */
+    protected toLink = (label: string, url: string) => `<a href="${FileUtils.resolve(url, this.settings)}">${label}</a>`;
+    /**
+     *
+     */
+    protected getResourcesRelativePath = () => Path.relative(
+        FileUtils.resolve(this.task.path, this.settings),
+        FileUtils.resolve(this.task.resources, this.settings)
+    );
+
+    /**
+     *
+     * @param uri
+     * @returns {any}
+     */
+    protected getRulesResourcesTags(uri: string) {
+
+        return this.settings
+            .checkout
+            .branchs
+            .map(branch => ({
+                from: `#resources-${branch}`,
+                to: this.toLink(branch, Path.join(
+                    uri,
+                    `${branch}.zip`
+                ))
+            }));
+
+    }
 }
