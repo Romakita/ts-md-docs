@@ -1,6 +1,6 @@
 {
   "name": "ts-md-docs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
@@ -10,7 +10,7 @@
     "release:major": "npm version major && npm publish && git push --follow-tags",
     "release:minor": "npm version minor && npm publish && git push --follow-tags",
     "release:patch": "npm version patch && npm publish && git push --follow-tags",
-      "tsc": "tsc",
+    "tsc": "tsc",
     "tsc:compile": "tsc --project tsconfig.compile.json",
     "tsc:compile:w": "tsc --project tsconfig.compile.json -w"
   },
