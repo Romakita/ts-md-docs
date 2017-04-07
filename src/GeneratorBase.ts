@@ -4,6 +4,7 @@ import * as Path from "path";
 import {FileUtils} from "./FileUtils";
 import {$log} from "ts-log-debug";
 import {pathsSrc} from "./constants/constants";
+import {MDUtils} from "./MDUtils";
 
 const ejs = require("ejs");
 
@@ -44,10 +45,14 @@ export abstract class GeneratorBase {
 
         scope.settings = this.settings;
 
+        if (scope.body) {
+            scope.body = ejs.render(scope.body, scope);
+        }
+
         if (this.cache.has(file)) {
             promise = this.cache.get(file);
         } else {
-            promise = FileUtils.read(Path.join(this.templateDir, `${file}.html`));
+            promise = FileUtils.read(Path.join(this.templateDir, `${file}.ejs`));
             this.cache.set(file, promise);
         }
 
@@ -143,5 +148,28 @@ export abstract class GeneratorBase {
                 ))
             }));
 
+    }
+
+    protected createRules() {
+        return [{
+            from: "__generate-summary__",
+            to: "<%- include 'partial/summary.html' ->"
+        }];
+    }
+    /**
+     *
+     * @param filesContents
+     * @param type
+     * @returns {{title: string, href: string}[]}
+     */
+    protected getMenu(filesContents: IFileContent[], type: "uri" | "hashtag" = "hashtag") {
+
+        return filesContents
+            .map((fileContent: IFileContent) => ({
+                title: fileContent.title,
+                href: type === "hashtag"
+                    ? "#" + MDUtils.sanitize(fileContent.title)
+                    : fileContent.path.replace(".md", ".html")
+            }));
     }
 }

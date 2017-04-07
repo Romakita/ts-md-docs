@@ -15,28 +15,21 @@ export class GeneratorHTML extends GeneratorBase {
 
         $log.debug("Task generate HTML");
 
-        let menu = [];
-
         let promises = filesContents
             .map((fileContent: IFileContent) => {
 
-                const file = fileContent.path.replace(".md", ".html").replace("readme", "index");
+                const file = fileContent.path.replace(".md", ".html");
 
-                const content = this.replaceUrl(
+                const content = this.replace(
                     MDUtils.markdownToHTML(fileContent.content),
                     filesContents
                 );
-
-                menu.push({
-                    title: fileContent.title,
-                    href: file
-                });
 
                 return this
                     .render("page", {
                         pageTitle: `${this.settings.pageTitle}`,
                         body: content,
-                        menu: menu
+                        menu: this.getMenu(filesContents)
                     })
                     .then(content => FileUtils.write(Path.join(this.task.path, file), content));
 
@@ -54,11 +47,12 @@ export class GeneratorHTML extends GeneratorBase {
      * @param cb
      * @returns {string}
      */
-    private replaceUrl(content: string, filesContents: IFileContent[], cb: Function = c => c): string {
+    private replace(content: string, filesContents: IFileContent[], cb: Function = c => c): string {
         const { root, repository, branch} = this.settings;
 
         const project = repository + Path.join("blob", branch);
-        let rules = [];
+
+        let rules = this.createRules();
 
         rules = rules.concat(
             this.settings.concat.files.map(file => ({

@@ -1,0 +1,55 @@
+
+<header class="navbar-fixed">
+
+    <nav class="navbar">
+        <div class="nav-wrapper">
+            <a href="http://valtech.fr" class="brand-logo">
+                <i class="valtech-logo--header glyph" data-icon="valtech-logo" aria-hidden="true"></i>
+            </a>
+
+            <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
+
+            <ul class="right hide-on-med-and-down">
+                <li>
+                    <a class="dropdown-button" href="#!" data-activates="dropdown1">
+                        <i class="material-icons">menu</i>
+                    </a>
+                </li>
+            </ul>
+
+
+        </div>
+    </nav>
+
+</header>
+
+<ul class="side-nav" id="mobile-demo">
+
+    <li class="logo">
+
+        <i class="valtech-logo--header glyph" data-icon="valtech-logo" aria-hidden="true"></i>
+
+    </li>
+
+    <%
+    if (menu){
+        for(var i = 0; i < menu.length; i++){
+        %>
+            <li><a href="<%= menu[i].href %>"><%= menu[i].title %></a></li>
+        <%
+        }
+    }
+    %>
+</ul>
+
+<ul id="dropdown1" class="dropdown-content">
+    <%
+    if (menu){
+        for(var i = 0; i < menu.length; i++){
+        %>
+            <li><a href="<%= menu[i].href %>"><%= menu[i].title %></a></li>
+        <%
+        }
+    }
+    %>
+</ul>
