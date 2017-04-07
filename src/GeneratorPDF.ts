@@ -114,7 +114,6 @@ export class GeneratorPDF extends GeneratorBase {
 
         return super.render("pdf", {
             pageTitle: `${this.settings.pageTitle}`,
-            settings: this.settings,
             body: content
         });
     }

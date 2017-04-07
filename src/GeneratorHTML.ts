@@ -34,7 +34,6 @@ export class GeneratorHTML extends GeneratorBase {
 
                 return this
                     .render("page", {
-                        settings: this.settings,
                         pageTitle: `${this.settings.pageTitle}`,
                         body: content,
                         menu: menu

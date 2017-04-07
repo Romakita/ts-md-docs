@@ -38,9 +38,11 @@ export abstract class GeneratorBase {
      * @param scope
      * @returns {PromiseLike<TResult>|Promise<TResult>|Promise<T>|Promise<TResult2|TResult1>}
      */
-    protected render(file: string, scope: any): Promise<string> {
+    protected render(file: string, scope: any = {}): Promise<string> {
 
         let promise;
+
+        scope.settings = this.settings;
 
         if (this.cache.has(file)) {
             promise = this.cache.get(file);
