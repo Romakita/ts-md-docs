@@ -16,17 +16,11 @@ export class GeneratorEbook extends GeneratorBase {
         $log.debug("Task generate Ebook");
 
         let promises = [];
-        let menu = [];
 
         let ebookContent = filesContents
             .map((fileContent: IFileContent) => {
 
                 let content = MDUtils.toTagID(fileContent.title) + "\n";
-
-                menu.push({
-                    title: fileContent.title,
-                    href: "#" + MDUtils.sanitize(fileContent.title)
-                });
 
                 return content + MDUtils.markdownToHTML(
                         fileContent.content
@@ -39,12 +33,11 @@ export class GeneratorEbook extends GeneratorBase {
 
         let promise = this
             .render("page", {
-                pageTitle: `${this.settings.pageTitle}`,
                 body: this.replaceUrl(
                     ebookContent,
                     filesContents
                 ),
-                menu: menu
+                menu: this.getMenu(filesContents)
             })
             .then(content => FileUtils.write(Path.join(this.task.path, `index.html`), content));
 
@@ -68,11 +61,15 @@ export class GeneratorEbook extends GeneratorBase {
 
         const base = repository +  Path.join("blob", branch);
 
-        let rules = filesContents
-            .map(fileContent => ({
-                from: base + "/" + fileContent.path.replace(root + "/", ""),
-                to: "#" + MDUtils.sanitize(fileContent.title)
-            }));
+        let rules = this.createRules();
+
+        rules = rules.concat(
+            filesContents
+                .map(fileContent => ({
+                    from: base + "/" + fileContent.path.replace(root + "/", ""),
+                    to: "#" + MDUtils.sanitize(fileContent.title)
+                }))
+        );
 
         if (this.task.resources) {
             rules = rules.concat(this.getRulesResourcesTags(this.getResourcesRelativePath()));

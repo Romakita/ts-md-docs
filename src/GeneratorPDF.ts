@@ -110,14 +110,6 @@ export class GeneratorPDF extends GeneratorBase {
         return Promise.all(promises);
     }
 
-    protected render(content: string): Promise<string> {
-
-        return super.render("pdf", {
-            pageTitle: `${this.settings.pageTitle}`,
-            body: content
-        });
-    }
-
     /**
      *
      * @param content
@@ -134,7 +126,11 @@ export class GeneratorPDF extends GeneratorBase {
     private generatePDF(filesContents: IFileContent[]) {
 
         return this
-            .render(filesContents.map(f => f.content).join("\n"))
+            .render("pdf", {
+                body: filesContents.map(f => f.content).join("\n"),
+                menu: this.getMenu(filesContents)
+            })
+
             .then(contentHTML => {
 
                 return new Promise((resolve, reject) => {
@@ -166,11 +162,15 @@ export class GeneratorPDF extends GeneratorBase {
 
         const project = Path.join(repository, "blob", branch);
 
-        let rules = filesContents
-            .map(fileContent => ({
-                from: Path.join(project, fileContent.path.replace(root + "/", "")),
-                to: cb(fileContent)
-            }));
+        let rules = this.createRules();
+
+        rules = rules.concat(
+            filesContents
+                .map(fileContent => ({
+                    from: Path.join(project, fileContent.path.replace(root + "/", "")),
+                    to: cb(fileContent)
+                }))
+        );
 
         //https://github.com/NodeAndTyped/labs-angular/archive/tp1-solution.zip
         //https://github.com/Romakita/ts-md-docs/archive/master.zip

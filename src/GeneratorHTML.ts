@@ -27,9 +27,8 @@ export class GeneratorHTML extends GeneratorBase {
 
                 return this
                     .render("page", {
-                        pageTitle: `${this.settings.pageTitle}`,
                         body: content,
-                        menu: this.getMenu(filesContents)
+                        menu: this.getMenu(filesContents, "uri")
                     })
                     .then(content => FileUtils.write(Path.join(this.task.path, file), content));
 

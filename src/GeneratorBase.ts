@@ -42,7 +42,10 @@ export abstract class GeneratorBase {
     protected render(file: string, scope: any = {}): Promise<string> {
 
         let promise;
+        scope = Object.assign({}, scope);
 
+        scope.pageTitle = this.settings.pageTitle;
+        scope.filename = Path.join(this.templateDir, `${file}.ejs`);
         scope.settings = this.settings;
 
         if (scope.body) {
@@ -52,7 +55,7 @@ export abstract class GeneratorBase {
         if (this.cache.has(file)) {
             promise = this.cache.get(file);
         } else {
-            promise = FileUtils.read(Path.join(this.templateDir, `${file}.ejs`));
+            promise = FileUtils.read(scope.filename);
             this.cache.set(file, promise);
         }
 
@@ -151,10 +154,12 @@ export abstract class GeneratorBase {
     }
 
     protected createRules() {
-        return [{
-            from: "__generate-summary__",
-            to: "<%- include 'partial/summary.html' ->"
-        }];
+        return [
+            {
+                from: "<p><strong>generate-summary</strong></p>",
+                to: "<%- include(\"partials/summary.ejs\") %>"
+            }
+        ];
     }
     /**
      *
@@ -170,6 +175,7 @@ export abstract class GeneratorBase {
                 href: type === "hashtag"
                     ? "#" + MDUtils.sanitize(fileContent.title)
                     : fileContent.path.replace(".md", ".html")
-            }));
+            }))
+            ;
     }
 }
