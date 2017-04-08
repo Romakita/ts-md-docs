@@ -1,19 +1,25 @@
+/** Link */
+
 a, .markdown-body a {
     cursor: pointer;
 }
+
 a, .markdown-body a {
     background: 0 0;
     color: #00bdfa;
     text-decoration: none;
 }
+/** Nav **/
 
 nav {
     background: rgba(255, 255, 255, 0.85);
     box-shadow: none;
     position: relative;
+    color:#1a1a1a;
 }
 nav .brand-logo {
     padding-left:20px;
+    color:#1a1a1a;
 }
 
 nav ul.right {
@@ -34,19 +40,7 @@ nav.darker {
     background: rgba(0,0,0,0.6) !important;
 }
 
-.parallax-container{
-    z-index: -1;
-}
-
-.parallax-home h2 {
-    position: absolute;
-    bottom: 45%;
-    width:500px;
-    left: 50%;
-    margin-left: -250px;
-    background: rgba(0,0,0, 0.7);
-    font-family: georgia, serif;
-}
+/** Section header */
 
 section header{
     margin: 1.5em auto;
@@ -78,6 +72,37 @@ ul.side-nav li.logo {
 #dropdown1 {
     width:300px !important;
 }
+
+/* body */
+
+.container.container-body {
+    padding: 25px 0px;
+}
+
+.container.container-body .markdown-body > h1 {
+    font-family: "Merriweather",georgia,serif;
+    margin: 0 0 1.6rem;
+    font-size: 2.3rem;
+    text-align: center;
+    font-weight: normal;
+    padding: 20px 0px;
+    border-bottom: 0;
+}
+
+.container.container-body .markdown-body > h1 + blockquote {
+    color: #777;
+    font-family: Merriweather,georgia,serif;
+    font-weight: 300;
+    letter-spacing: -.01em;
+    line-height: 1.7;
+    font-size: 1.5em;
+    margin-bottom: 2.5em;
+    border:0;
+    text-align: center;
+    margin-top:-20px;
+}
+
+/* Footer */
 
 footer.page-footer{
     background: #1A1A1A;
