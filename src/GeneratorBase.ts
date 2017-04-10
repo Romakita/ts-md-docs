@@ -158,6 +158,10 @@ export abstract class GeneratorBase {
             {
                 from: "<p><strong>generate-summary</strong></p>",
                 to: "<%- include(\"partials/summary.ejs\") %>"
+            },
+            {
+                from: "class=\"language-",
+                to: "class=\""
             }
         ];
     }
