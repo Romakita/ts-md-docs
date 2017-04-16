@@ -22,6 +22,10 @@ nav .brand-logo {
     color:#1a1a1a;
 }
 
+nav .brand-logo.center {
+    padding-left:0px;
+}
+
 nav ul.right {
     padding-right:20px;
 }
@@ -68,8 +72,12 @@ ul.side-nav li.logo {
     text-align: center;
     height: 57px;
 }
+ul.side-nav a {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
-#dropdown1 {
+.dropdown-menu {
     width:300px !important;
 }
 

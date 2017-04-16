@@ -11,7 +11,7 @@
                 <%- pageTitle %>
             </a>
 
-            <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
+            <a href="#" data-activates="global-menu-mobile" class="button-collapse"><i class="material-icons">menu</i></a>
 
             <ul class="right">
                 <li>
@@ -20,14 +20,14 @@
                     </a>
                 </li>
 
-                <li>
-                    <a href="<%- settings.repository %>zipball/master" title="download">
+                <li class="hide-on-med-and-down">
+                    <a href="#!" class="dropdown-button" title="download" data-activates="global-menu-download" data-beloworigin="true">
                         <i class="material-icons">file_download</i>
                     </a>
                 </li>
 
                 <li class="hide-on-med-and-down">
-                    <a class="dropdown-button" href="#!" data-activates="dropdown1">
+                    <a class="dropdown-button" href="#!" data-activates="global-menu" data-beloworigin="true">
                         <i class="material-icons">menu</i>
                     </a>
                 </li>
@@ -39,7 +39,7 @@
 
 </header>
 
-<ul class="side-nav" id="mobile-demo">
+<ul class="side-nav" id="global-menu-mobile">
 
     <li class="logo">
 
@@ -56,9 +56,40 @@
         }
     }
     %>
+
+    <li><div class="divider"></div></li>
+
+    <li class="no-padding">
+        <ul class="collapsible collapsible-accordion">
+            <li>
+                <a class="collapsible-header">Télécharger<i class="material-icons">arrow_drop_down</i></a>
+                <div class="collapsible-body">
+                    <ul>
+
+                        <li>
+                            <a href="<%- settings.repository %>zipball/master">
+                                Documentation (master)
+                            </a>
+                        </li>
+
+                        <%
+                        if (downloadMenu){
+                            for(var i = 0; i < downloadMenu.length; i++){
+                            %>
+                                <li><a href="<%= downloadMenu[i].href %>"><%= downloadMenu[i].title %></a></li>
+                            <%
+                            }
+                        }
+                        %>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </li>
+
 </ul>
 
-<ul id="dropdown1" class="dropdown-content">
+<ul id="global-menu" class="dropdown-menu dropdown-content">
     <%
     if (menu){
         for(var i = 0; i < menu.length; i++){
@@ -68,4 +99,26 @@
         }
     }
     %>
+</ul>
+
+
+<ul id="global-menu-download" class="dropdown-menu dropdown-content">
+    <li>
+        <a href="<%- settings.repository %>zipball/master">
+            Télécharger la documentation (master)
+        </a>
+    </li>
+
+    <li class="divider"></li>
+
+    <%
+        if (downloadMenu){
+            for(var i = 0; i < downloadMenu.length; i++){
+        %>
+            <li><a href="<%= downloadMenu[i].href %>">Télécharger <%= downloadMenu[i].title %></a></li>
+        <%
+            }
+        }
+    %>
+
 </ul>

@@ -47,6 +47,7 @@ export abstract class GeneratorBase {
         scope.pageTitle = this.settings.pageTitle;
         scope.filename = Path.join(this.templateDir, `${file}.ejs`);
         scope.settings = this.settings;
+        scope.downloadMenu = this.getBranchsUrls();
 
         if (scope.body) {
             scope.body = ejs.render(scope.body, scope);
@@ -153,6 +154,10 @@ export abstract class GeneratorBase {
 
     }
 
+    /**
+     *
+     * @returns {[{from: string, to: string},{from: string, to: string}]}
+     */
     protected createRules() {
         return [
             {
@@ -181,5 +186,21 @@ export abstract class GeneratorBase {
                     : fileContent.path.replace(".md", ".html")
             }))
             ;
+    }
+
+    /**
+     *
+     * @returns {Array}
+     */
+    protected getBranchsUrls(): {title: string, href: string}[] {
+        if(this.settings.checkout) {
+            return this.settings.checkout.branchs.map(
+                branch => ({
+                    href: this.settings.repository + Path.join('archive', `${branch}.zip`),
+                    title: branch
+                })
+            );
+        }
+        return [];
     }
 }
