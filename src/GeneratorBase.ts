@@ -116,7 +116,12 @@ export abstract class GeneratorBase {
      * @returns {any}
      */
     protected replacer(content, rules) {
-        rules.forEach(rule => content = content.replace(new RegExp(rule.from, "gi"), rule.to));
+        rules.forEach(rule =>
+            content = content.replace(
+                rule.from instanceof RegExp ? rule.from : new RegExp(rule.from, "gi"),
+                rule.to
+            )
+        );
         return content;
     }
 
@@ -161,8 +166,8 @@ export abstract class GeneratorBase {
     protected createRules() {
         return [
             {
-                from: "<p><strong>generate-summary</strong></p>",
-                to: "<%- include(\"partials/summary.ejs\") %>"
+                from: /<p><strong>generate-([a-zA-Z_/].*)<\/strong><\/p>/gi,
+                to: "<%- include(\"partials/$1.ejs\") %>"
             },
             {
                 from: "class=\"language-",
