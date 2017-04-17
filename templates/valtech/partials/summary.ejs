@@ -3,7 +3,7 @@
     if (menu) {
         for(var i = 1; i < menu.length; i++){
     %>
-        <li><a href="<%= menu[i].href %>"><%= menu[i].title %></a></li>
+        <li><a href="<%= menu[i].href %>"><%= menu[i].title %><%= i < menu.length-1 ? "," : "." %></a></li>
     <%
         }
     }
